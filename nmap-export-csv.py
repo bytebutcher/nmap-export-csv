@@ -155,9 +155,9 @@ parser.add_argument("-p", "--pack-ports", dest="pack_ports", action="store_true"
 parser.add_argument("-f", "--filter", dest="filter",
                     help="Filter results using pandas query language notation "
                          "(e.g. 'status=\"open\" and protocol=\"tcp\"').")
-parser.add_argument("--pack-ports-separator", dest="pack_ports_separator",
-                    help="Pack ports into single string separated by character (default=',').")
-parser.add_argument("--csv-separator", dest="csv_separator",
+parser.add_argument("--pack-ports-separator", dest="pack_ports_separator", metavar="CHARACTER",
+                    help="1-character string which is used to separate packed ports (default=,).")
+parser.add_argument("--csv-separator", dest="csv_separator", metavar="CHARACTER",
                     help="1-character string which is used to separate columns in the resulting csv (default=\\t).")
 parser.add_argument(dest="nmap_xml_files", metavar="NMAP_XML_FILE", nargs='+',
                     help="One or more nmap xml files to parse")

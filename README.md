@@ -5,8 +5,9 @@ export nmap xml results into csv format
 ## Usage
 
 ```
-usage: nmap-export-csv.py [-h] [-c COLUMNS] [-p PACK_PORTS] [-f FILTER]
-                          [-s SEPARATOR]
+usage: nmap-export-csv.py [-h] [-c COLUMNS] [-p] [-f FILTER]
+                          [--pack-ports-separator CHARACTER]
+                          [--csv-separator CHARACTER]
                           NMAP_XML_FILE [NMAP_XML_FILE ...]
 
 Export nmap results into csv format
@@ -17,13 +18,17 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -c COLUMNS, --columns COLUMNS
-                        Columns to print (default='address,port,protocol,status,banner').
-  -p PACK_PORTS, --pack-ports [SEPARATOR]
-                        Pack ports into single string separated by character (default=',').
+                        Columns to print
+                        (default='address,port,protocol,status,banner').
+  -p, --pack-ports      Pack ports into single string separated by character
+                        (default=',').
   -f FILTER, --filter FILTER
                         Filter results using pandas query language notation
                         (e.g. 'status="open" and protocol="tcp"').
-  -s SEPARATOR, --separator SEPARATOR
+  --pack-ports-separator CHARACTER
+                        1-character string which is used to separate packed
+                        ports (default=,).
+  --csv-separator CHARACTER
                         1-character string which is used to separate columns
                         in the resulting csv (default=\t).
 ```
@@ -31,5 +36,5 @@ optional arguments:
 ## Installation
 
 ```
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 ```
