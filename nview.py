@@ -57,16 +57,15 @@ def init_logger(app_id, log_format="%(msg)s", log_level=logging.DEBUG):
 
 class NView(object):
 
-    def __init__(self, nmap_xml_files, columns, pack_ports, pack_ports_separator):
+    def __init__(self, nmap_xml_files, columns, pack_ports_separator):
         self._data_columns = ["address", "port", "protocol", "status", "banner"]
         self._view_columns = self.__init_view_columns(columns)
-        self._pack_ports = pack_ports
         self._pack_ports_separator = pack_ports_separator
-        self.__init_pack_ports(pack_ports)
+        self.__init_pack_ports(pack_ports_separator)
         self._data = self.__parse_nmap_xml_files(nmap_xml_files)
 
-    def __init_pack_ports(self, pack_ports):
-        if pack_ports:
+    def __init_pack_ports(self, pack_ports_separator):
+        if pack_ports_separator:
             if "banner" in self._view_columns:
                 self._view_columns.pop() # Do not view banner
             self._data_columns.pop() # Do not process banner
@@ -98,7 +97,7 @@ class NView(object):
         }
 
         for status, ports in status_ports_map.items():
-            if self._pack_ports:
+            if self._pack_ports_separator:
                 ports_tcp = [str(port_spec[0]) for port_spec in ports if port_spec[1] == "tcp"]
                 if ports_tcp:
                     data.append(np.array([host.address, self._pack_ports_separator.join(ports_tcp), "tcp", status]))
@@ -151,15 +150,13 @@ logger = init_logger(app_name)
 parser = argparse.ArgumentParser(description=app_description)
 parser.add_argument("-c", "--columns", dest="columns",
                     help="Columns to print (default='address,port,protocol,status,banner').")
-parser.add_argument("-p", "--pack-ports", dest="pack_ports", action="store_true",
-                    help="Pack ports into single string separated by character (default=',').")
 parser.add_argument("-f", "--filter", dest="filter",
                     help="Filter results using pandas query language notation "
                          "(e.g. 'status=\"open\" and protocol=\"tcp\"').")
-parser.add_argument("--pack-ports-separator", dest="pack_ports_separator", metavar="CHARACTER",
-                    help="1-character string which is used to separate packed ports (default=,).")
-parser.add_argument("--csv-separator", dest="csv_separator", metavar="CHARACTER",
-                    help="1-character string which is used to separate columns in the resulting csv (default=\\t).")
+parser.add_argument( "--compact", dest="compact_separator", metavar="CHARACTER", nargs='?', const=',', 
+                    help="packs ports with same host and status using character as separator (default=,).")
+parser.add_argument("--column-separator", dest="column_separator", metavar="CHARACTER", default='\t',
+                    help="1-character string which is used to separate columns (default=\\t).")
 parser.add_argument(dest="nmap_xml_files", metavar="NMAP_XML_FILE", nargs='+',
                     help="One or more nmap xml files to parse")
 parser.add_argument('-d', '--debug', action="store_true",
@@ -171,23 +168,21 @@ if len(sys.argv) == 0 or not arguments.nmap_xml_files:
     parser.print_usage()
     exit(1)
 
-if arguments.csv_separator and len(arguments.csv_separator != 1):
-    logger.error("ERROR: --csv-separator must be a 1-character string!")
+if arguments.column_separator and len(arguments.column_separator) != 1:
+    logger.error("ERROR: --csv-separator must be a one character string!")
     exit(1)
 
-if arguments.pack_ports_separator and len(arguments.pack_ports_separator != 1):
-    logger.error("ERROR: --pack-ports-separator must be a 1-character string!")
+if arguments.compact_separator and len(arguments.compact_separator) != 1:
+    logger.error("ERROR: --compact must be a one character string!")
     exit(1)
 
-csv_separator = arguments.csv_separator if arguments.csv_separator else '\t'
-pack_ports_separator = arguments.pack_ports_separator if arguments.pack_ports_separator else ','
-if csv_separator == pack_ports_separator:
-    logger.error("ERROR: --separator and --pack-ports separator can not be the same!")
+if arguments.column_separator == arguments.compact_separator:
+    logger.error("ERROR: --column-separator and --compact separator can not be the same!")
     exit(1)
 
 try:
-    nview = NView(arguments.nmap_xml_files, arguments.columns, arguments.pack_ports, pack_ports_separator)
-    print(nview.build(csv_separator, arguments.filter))
+    nview = NView(arguments.nmap_xml_files, arguments.columns, arguments.compact_separator)
+    print(nview.build(arguments.column_separator, arguments.filter))
 except Exception as err:
     logger.error("ERROR: {}".format(err))
     if arguments.debug:
