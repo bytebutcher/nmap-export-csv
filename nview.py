@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # ##################################################
 # NAME:
-#   nmap-export-csv.py
+#   nview.py
 # DESCRIPTION:
-#   Export nmap results into csv format
+#   View and filter nmap results.
 # AUTHOR:
 #   bytebutcher
 # ##################################################
 import argparse
 import logging
+import traceback
 import os
 import sys
 
@@ -35,9 +36,9 @@ except:
     sys.stderr.write("Please install requirements using 'pip3 install -r requirements.txt" + os.linesep)
     sys.exit(1)
 
-app_name = "nmap-export-csv"
-app_version = "1.0"
-app_description = "Export nmap results into csv format"
+app_name = "nview"
+app_version = "1.1"
+app_description = "View and filter nmap results."
 
 
 def init_logger(app_id, log_format="%(msg)s", log_level=logging.DEBUG):
@@ -54,7 +55,7 @@ def init_logger(app_id, log_format="%(msg)s", log_level=logging.DEBUG):
     return logger
 
 
-class NmapExport(object):
+class NView(object):
 
     def __init__(self, nmap_xml_files, columns, pack_ports, pack_ports_separator):
         self._data_columns = ["address", "port", "protocol", "status", "banner"]
@@ -134,7 +135,7 @@ class NmapExport(object):
             data += self.__parse_nmap_xml_file(nmap_xml_file)
         return data
 
-    def to_csv(self, separator=None, filter_string=None):
+    def build(self, separator=None, filter_string=None):
         data_frame = pd.DataFrame(data=self._data, columns=self._data_columns)
         if filter_string:
             try:
@@ -161,6 +162,9 @@ parser.add_argument("--csv-separator", dest="csv_separator", metavar="CHARACTER"
                     help="1-character string which is used to separate columns in the resulting csv (default=\\t).")
 parser.add_argument(dest="nmap_xml_files", metavar="NMAP_XML_FILE", nargs='+',
                     help="One or more nmap xml files to parse")
+parser.add_argument('-d', '--debug', action="store_true",
+                    dest='debug',
+                    help="Prints additional debug information (e.g. stack traces).")
 
 arguments = parser.parse_args()
 if len(sys.argv) == 0 or not arguments.nmap_xml_files:
@@ -181,9 +185,11 @@ if csv_separator == pack_ports_separator:
     logger.error("ERROR: --separator and --pack-ports separator can not be the same!")
     exit(1)
 
-#try:
-nmap_export = NmapExport(arguments.nmap_xml_files, arguments.columns, arguments.pack_ports, pack_ports_separator)
-print(nmap_export.to_csv(csv_separator, arguments.filter))
-#except Exception as err:
-#    logger.error("ERROR: {}".format(err))
-#    exit(1)
+try:
+    nview = NView(arguments.nmap_xml_files, arguments.columns, arguments.pack_ports, pack_ports_separator)
+    print(nview.build(csv_separator, arguments.filter))
+except Exception as err:
+    logger.error("ERROR: {}".format(err))
+    if arguments.debug:
+        traceback.print_exc()
+    exit(1)
