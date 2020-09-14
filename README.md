@@ -10,7 +10,7 @@ usage: nview.py [-h] [-c COLUMNS] [-p] [-f FILTER]
                           [--csv-separator CHARACTER]
                           NMAP_XML_FILE [NMAP_XML_FILE ...]
 
-Export nmap results into csv format
+View and filter nmap results.
 
 positional arguments:
   NMAP_XML_FILE         One or more nmap xml files to parse
