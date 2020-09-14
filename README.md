@@ -1,11 +1,11 @@
-# nmap-export-csv
+# nview
 
-export nmap xml results into csv format
+View and filter nmap results.
 
 ## Usage
 
 ```
-usage: nmap-export-csv.py [-h] [-c COLUMNS] [-p] [-f FILTER]
+usage: nview.py [-h] [-c COLUMNS] [-p] [-f FILTER]
                           [--pack-ports-separator CHARACTER]
                           [--csv-separator CHARACTER]
                           NMAP_XML_FILE [NMAP_XML_FILE ...]
